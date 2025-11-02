@@ -155,9 +155,9 @@ Rev 1 exposes simple routes (patterned after `server.on(...)` in the .ino):
 
 > **Note:** If your copy of Rev 1 diverges, search the sketch for `server.on(` and adjust your scripts accordingly. We keep routes minimal and deterministic for test rigs.
 
-### 6.3 MQTT (optional)
+### 6.3 MQTT
 
-MQTT isn’t enabled by default in Rev 1, but the code is structured so you can drop in a client and publish:
+MQTT is now integrated in for Rev 2
 
 - `relayboard/<host>/di` – DI bitmask
 - `relayboard/<host>/relay` – relay bitmask
