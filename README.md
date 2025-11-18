@@ -579,28 +579,28 @@ Edit these defines in the main `.ino` file (around line 188):
 
 **Relay State Publishing** (device → broker):
 ```
-relayboard/relay/0/state  → "ON" or "OFF"
 relayboard/relay/1/state  → "ON" or "OFF"
+relayboard/relay/2/state  → "ON" or "OFF"
 ...
-relayboard/relay/7/state  → "ON" or "OFF"
+relayboard/relay/8/state  → "ON" or "OFF"
 relayboard/relays/state   → "01010101" (8-bit binary mask)
 ```
 
 **Relay Command Subscription** (broker → device):
 ```
-relayboard/relay/0/command  ← "ON" or "OFF"
-relayboard/relay/1/command  ← "ON" or "OFF"
+relayboard/relay/1/set  ← "ON" or "OFF"
+relayboard/relay/2/set  ← "ON" or "OFF"
 ...
-relayboard/relay/7/command  ← "ON" or "OFF"
-relayboard/relays/command   ← "01010101" (8-bit binary mask)
+relayboard/relay/8/set  ← "ON" or "OFF"
+relayboard/relays/set   ← "01010101" (8-bit binary mask)
 ```
 
 **Digital Input State Publishing** (device → broker):
 ```
-relayboard/input/0/state  → "ON" or "OFF"  (ON = active/low)
-relayboard/input/1/state  → "ON" or "OFF"
+relayboard/input/1/state  → "ON" or "OFF"  (ON = active/low)
+relayboard/input/2/state  → "ON" or "OFF"
 ...
-relayboard/input/7/state  → "ON" or "OFF"
+relayboard/input/8/state  → "ON" or "OFF"
 relayboard/inputs/state   → "01010101" (8-bit binary mask)
 ```
 
@@ -627,14 +627,14 @@ Example `configuration.yaml` entries:
 mqtt:
   switch:
     - name: "Relay 1"
-      state_topic: "relayboard/relay/0/state"
-      command_topic: "relayboard/relay/0/command"
+      state_topic: "relayboard/relay/1/state"
+      command_topic: "relayboard/relay/1/set"
       payload_on: "ON"
       payload_off: "OFF"
       
   binary_sensor:
     - name: "Digital Input 1"
-      state_topic: "relayboard/input/0/state"
+      state_topic: "relayboard/input/1/state"
       payload_on: "ON"
       payload_off: "OFF"
       device_class: occupancy
@@ -655,7 +655,7 @@ Use MQTT nodes to subscribe to state topics and publish to command topics:
   {
     "id": "mqtt-out",
     "type": "mqtt out",
-    "topic": "relayboard/relay/0/command",
+    "topic": "relayboard/relay/1/set",
     "broker": "mqtt-broker"
   }
 ]
