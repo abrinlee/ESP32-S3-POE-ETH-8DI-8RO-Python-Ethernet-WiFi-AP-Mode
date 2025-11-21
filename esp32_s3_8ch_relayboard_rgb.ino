@@ -1290,6 +1290,19 @@ void mqttPublishAllRelayStates() {
   mqttClient.publish(topic.c_str(), payload.c_str(), true);
 }
 
+void mqttPublishDevice() {
+  if (!mqttClient.connected()) return;
+
+  String mode_topic = String(MQTT_BASE_TOPIC) + "/device/mode";
+  String mode_payload = (g_mode==MODE_ETH)?"Ethernet":(g_mode==MODE_WIFI)?"Wi-Fi":"AP";
+  mqttClient.publish(mode_topic.c_str(), mode_payload.c_str(), true);
+
+  IPAddress ip = (g_mode == MODE_ETH) ? Ethernet.localIP() : WiFi.localIP();
+  String ip_topic = String(MQTT_BASE_TOPIC) + "/device/ip";
+  String ip_payload = ipStr(ip);
+  mqttClient.publish(ip_topic.c_str(), ip_payload.c_str(), true);
+}
+
 void mqttPublishInputState(uint8_t idx) {
   if (!mqttClient.connected()) return;
   
@@ -1390,6 +1403,7 @@ void mqttLoop() {
     if (millis() - g_mqtt_last_state_publish > MQTT_STATE_INTERVAL) {
       g_mqtt_last_state_publish = millis();
       mqttPublishAllRelayStates();
+      mqttPublishDevice();
     }
   }
 }
