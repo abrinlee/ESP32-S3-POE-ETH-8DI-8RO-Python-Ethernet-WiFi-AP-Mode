@@ -217,7 +217,7 @@ git clone https://github.com/abrinlee/ESP32-S3-POE-ETH-8DI-8RO-Python-Ethernet-W
 
 ### 3. Configure Network Settings
 
-Edit the main `.ino` file and update these constants near line 173:
+Edit the `Information.h` file and update these constants:
 
 ```cpp
 // WiFi Credentials
@@ -230,18 +230,22 @@ Edit the main `.ino` file and update these constants near line 173:
 
 ### 4. Configure MQTT (Optional)
 
-Edit MQTT settings near line 188:
+Edit the `Information.h` file and update these constants:
 
 ```cpp
 // MQTT Broker Configuration
+#define MQTT_ENABLED 1 // 1=enabled, 0=disabled
 #define MQTT_BROKER_IP IPAddress(192, 168, 0, 94)  // Your MQTT broker IP
 #define MQTT_PORT 1883
 #define MQTT_USER "mqtt_username"
 #define MQTT_PASS "mqtt_password"
-#define MQTT_CLIENT_ID "relayboard-client"
+#define MQTT_CLIENT_ID "mqtt_client_id"
+#define MQTT_BASE_TOPIC "relayboard"
+#define MQTT_STATE_INTERVAL 59000
+#define MQTT_RECONNECT_INTERVAL 60000
 ```
 
-To disable MQTT, comment out the MQTT setup calls in `setup()` and `loop()`.
+To disable MQTT, set MQTT constant `MQTT_ENABLED` to `0`.
 
 ### 5. Upload Partition Table
 
@@ -579,28 +583,28 @@ Edit these defines in the main `.ino` file (around line 188):
 
 **Relay State Publishing** (device → broker):
 ```
-relayboard/relay/0/state  → "ON" or "OFF"
 relayboard/relay/1/state  → "ON" or "OFF"
+relayboard/relay/2/state  → "ON" or "OFF"
 ...
-relayboard/relay/7/state  → "ON" or "OFF"
+relayboard/relay/8/state  → "ON" or "OFF"
 relayboard/relays/state   → "01010101" (8-bit binary mask)
 ```
 
 **Relay Command Subscription** (broker → device):
 ```
-relayboard/relay/0/command  ← "ON" or "OFF"
-relayboard/relay/1/command  ← "ON" or "OFF"
+relayboard/relay/1/set  ← "ON" or "OFF"
+relayboard/relay/2/set  ← "ON" or "OFF"
 ...
-relayboard/relay/7/command  ← "ON" or "OFF"
-relayboard/relays/command   ← "01010101" (8-bit binary mask)
+relayboard/relay/8/set  ← "ON" or "OFF"
+relayboard/relays/set   ← "01010101" (8-bit binary mask)
 ```
 
 **Digital Input State Publishing** (device → broker):
 ```
-relayboard/input/0/state  → "ON" or "OFF"  (ON = active/low)
-relayboard/input/1/state  → "ON" or "OFF"
+relayboard/input/1/state  → "ON" or "OFF"  (ON = active/low)
+relayboard/input/2/state  → "ON" or "OFF"
 ...
-relayboard/input/7/state  → "ON" or "OFF"
+relayboard/input/8/state  → "ON" or "OFF"
 relayboard/inputs/state   → "01010101" (8-bit binary mask)
 ```
 
@@ -627,14 +631,14 @@ Example `configuration.yaml` entries:
 mqtt:
   switch:
     - name: "Relay 1"
-      state_topic: "relayboard/relay/0/state"
-      command_topic: "relayboard/relay/0/command"
+      state_topic: "relayboard/relay/1/state"
+      command_topic: "relayboard/relay/1/set"
       payload_on: "ON"
       payload_off: "OFF"
       
   binary_sensor:
     - name: "Digital Input 1"
-      state_topic: "relayboard/input/0/state"
+      state_topic: "relayboard/input/1/state"
       payload_on: "ON"
       payload_off: "OFF"
       device_class: occupancy
@@ -655,7 +659,7 @@ Use MQTT nodes to subscribe to state topics and publish to command topics:
   {
     "id": "mqtt-out",
     "type": "mqtt out",
-    "topic": "relayboard/relay/0/command",
+    "topic": "relayboard/relay/1/set",
     "broker": "mqtt-broker"
   }
 ]
