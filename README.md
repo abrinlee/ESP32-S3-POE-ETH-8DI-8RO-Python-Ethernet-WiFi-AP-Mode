@@ -217,7 +217,7 @@ git clone https://github.com/abrinlee/ESP32-S3-POE-ETH-8DI-8RO-Python-Ethernet-W
 
 ### 3. Configure Network Settings
 
-Edit the main `.ino` file and update these constants near line 173:
+Edit the `Information.h` file and update these constants:
 
 ```cpp
 // WiFi Credentials
@@ -230,15 +230,19 @@ Edit the main `.ino` file and update these constants near line 173:
 
 ### 4. Configure MQTT (Optional)
 
-Edit MQTT settings near line 188:
+Edit the `Information.h` file and update these constants:
 
 ```cpp
 // MQTT Broker Configuration
+#define MQTT_ENABLED 1 // 1=enabled, 0=disabled
 #define MQTT_BROKER_IP IPAddress(192, 168, 0, 94)  // Your MQTT broker IP
 #define MQTT_PORT 1883
 #define MQTT_USER "mqtt_username"
 #define MQTT_PASS "mqtt_password"
-#define MQTT_CLIENT_ID "relayboard-client"
+#define MQTT_CLIENT_ID "mqtt_client_id"
+#define MQTT_BASE_TOPIC "relayboard"
+#define MQTT_STATE_INTERVAL 59000
+#define MQTT_RECONNECT_INTERVAL 60000
 ```
 
 To disable MQTT, comment out the MQTT setup calls in `setup()` and `loop()`.

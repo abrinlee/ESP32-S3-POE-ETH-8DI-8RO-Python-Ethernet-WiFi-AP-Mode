@@ -9,10 +9,11 @@
 #define TCA9554_ADDR 0x20
 
 // ---------------- MQTT Configuration ----------------
-#define MQTT_BROKER_IP "192.168.0.94"  // MQTT broker
+#define MQTT_ENABLED 1 // 0=disabled, 1=enabled
+#define MQTT_BROKER_IP "192.168.0.94"
 #define MQTT_PORT 1883
-#define MQTT_USER "mqtt_user"  // MQTT username
-#define MQTT_PASS "mqtt_password"   // MQTT password
+#define MQTT_USER "mqtt_user"
+#define MQTT_PASS "mqtt_password"
 #define MQTT_CLIENT_ID "mqtt_client_id"
 #define MQTT_BASE_TOPIC "relayboard"
 #define MQTT_STATE_INTERVAL 59000
