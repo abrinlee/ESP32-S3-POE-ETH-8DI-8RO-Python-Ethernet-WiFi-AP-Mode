@@ -204,6 +204,9 @@ void detectAndApplyNetMode_() {
 #ifndef MQTT_CLIENT_ID
   #define MQTT_CLIENT_ID "mqtt_client_id"
 #endif
+#ifndef MQTT_BASE_TOPIC
+  #define MQTT_BASE_TOPIC "relayboard"
+#endif
 #ifndef MQTT_STATE_INTERVAL
   #define MQTT_STATE_INTERVAL 5000
 #endif
