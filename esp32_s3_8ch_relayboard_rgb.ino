@@ -169,9 +169,11 @@ void detectAndApplyNetMode_() {
   }
 }
 
+#include "Information.h"
+
 // ---------------- WiFi / Host Config ----------------
 #ifndef WIFI_SSID
-  #define WIFI_SSID   "wifi_ssid
+  #define WIFI_SSID   "wifi_ssid"
 #endif
 #ifndef WIFI_PASS
   #define WIFI_PASS   "wifi_password"
@@ -187,7 +189,9 @@ void detectAndApplyNetMode_() {
 
 // ---------------- MQTT Configuration ----------------
 // MQTT broker configuration for Ubuntu server at 192.168.0.94
-#define MQTT_BROKER_IP IPAddress(192, 168, 0, 94)  // Your Ubuntu server
+#ifndef MQTT_BROKER_IP
+  #define MQTT_BROKER_IP IPAddress(192, 168, 0, 94)  // Your Ubuntu server
+#endif
 #ifndef MQTT_PORT
   #define MQTT_PORT 1883
 #endif
@@ -200,9 +204,12 @@ void detectAndApplyNetMode_() {
 #ifndef MQTT_CLIENT_ID
   #define MQTT_CLIENT_ID "mqtt_client_id"
 #endif
-#define MQTT_BASE_TOPIC "relayboard"
-#define MQTT_STATE_INTERVAL 5000
-#define MQTT_RECONNECT_INTERVAL 5000
+#ifndef MQTT_STATE_INTERVAL
+  #define MQTT_STATE_INTERVAL 5000
+#endif
+#ifndef MQTT_RECONNECT_INTERVAL
+  #define MQTT_RECONNECT_INTERVAL 5000
+#endif
 
 // ---------------- Globals ---------------------------
 volatile bool g_ota_ready = false;
