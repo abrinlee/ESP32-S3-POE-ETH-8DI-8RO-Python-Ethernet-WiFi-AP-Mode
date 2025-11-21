@@ -245,7 +245,7 @@ Edit the `Information.h` file and update these constants:
 #define MQTT_RECONNECT_INTERVAL 60000
 ```
 
-To disable MQTT, comment out the MQTT setup calls in `setup()` and `loop()`.
+To disable MQTT, set MQTT constant `MQTT_ENABLED` to `0`.
 
 ### 5. Upload Partition Table
 
