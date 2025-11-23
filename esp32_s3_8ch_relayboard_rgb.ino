@@ -169,9 +169,11 @@ void detectAndApplyNetMode_() {
   }
 }
 
+#include "Information.h"
+
 // ---------------- WiFi / Host Config ----------------
 #ifndef WIFI_SSID
-  #define WIFI_SSID   "wifi_ssid
+  #define WIFI_SSID   "wifi_ssid"
 #endif
 #ifndef WIFI_PASS
   #define WIFI_PASS   "wifi_password"
@@ -186,23 +188,33 @@ void detectAndApplyNetMode_() {
 #endif
 
 // ---------------- MQTT Configuration ----------------
-// MQTT broker configuration for Ubuntu server at 192.168.0.94
-#define MQTT_BROKER_IP IPAddress(192, 168, 0, 94)  // Your Ubuntu server
+#ifndef MQTT_ENABLED
+  #define MQTT_ENABLED 1
+#endif
+#ifndef MQTT_BROKER_IP
+  #define MQTT_BROKER_IP IPAddress(192, 168, 0, 94)
+#endif
 #ifndef MQTT_PORT
   #define MQTT_PORT 1883
 #endif
 #ifndef MQTT_USER
-  #define MQTT_USER "mqtt_username"  // MQTT username
+  #define MQTT_USER "mqtt_username"
 #endif
 #ifndef MQTT_PASS
-  #define MQTT_PASS "mqtt_password"   // MQTT password
+  #define MQTT_PASS "mqtt_password"
 #endif
 #ifndef MQTT_CLIENT_ID
   #define MQTT_CLIENT_ID "mqtt_client_id"
 #endif
-#define MQTT_BASE_TOPIC "relayboard"
-#define MQTT_STATE_INTERVAL 5000
-#define MQTT_RECONNECT_INTERVAL 5000
+#ifndef MQTT_BASE_TOPIC
+  #define MQTT_BASE_TOPIC "relayboard"
+#endif
+#ifndef MQTT_STATE_INTERVAL
+  #define MQTT_STATE_INTERVAL 5000
+#endif
+#ifndef MQTT_RECONNECT_INTERVAL
+  #define MQTT_RECONNECT_INTERVAL 5000
+#endif
 
 // ---------------- Globals ---------------------------
 volatile bool g_ota_ready = false;
@@ -218,6 +230,7 @@ TCA9554 tca(TCA9554_ADDR);
 WiFiClient wifiClient;
 EthernetClient ethClient;
 PubSubClient mqttClient;
+bool g_mqtt_first_loop = true;
 bool g_mqtt_connected = false;
 uint32_t g_mqtt_last_attempt = 0;
 uint32_t g_mqtt_last_state_publish = 0;
@@ -232,6 +245,7 @@ static uint32_t g_nextWalkMs = 0;
 String buildLogJson();
 void mqttCallback(char* topic, byte* payload, unsigned int length);
 void mqttReconnect();
+void mqttPublishDevice();
 void mqttPublishRelayState(uint8_t idx);
 void mqttPublishAllRelayStates();
 void mqttPublishInputState(uint8_t idx);
@@ -1197,7 +1211,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
 }
 
 void mqttReconnect() {
-  if (!mqttClient.connected() && (millis() - g_mqtt_last_attempt > MQTT_RECONNECT_INTERVAL)) {
+  if (g_mqtt_first_loop || !mqttClient.connected() && (millis() - g_mqtt_last_attempt > MQTT_RECONNECT_INTERVAL)) {
+    g_mqtt_first_loop = false;
     g_mqtt_last_attempt = millis();
     
     // Use configured broker IP
@@ -1232,6 +1247,7 @@ void mqttReconnect() {
       mqttClient.subscribe(allTopic.c_str());
       UI_SERIAL.printf("[MQTT] Subscribed to %s\n", allTopic.c_str());
       
+      mqttPublishDevice();
       mqttPublishAllRelayStates();
       mqttPublishAllInputStates();  // Publish digital input states too
       
@@ -1280,6 +1296,14 @@ void mqttPublishAllRelayStates() {
   }
   payload += "\",\"hex\":\"0x" + String(g_mask, HEX) + "\"}";
   
+  mqttClient.publish(topic.c_str(), payload.c_str(), true);
+}
+
+void mqttPublishDevice() {
+  if (!mqttClient.connected()) return;
+
+  String topic = String(MQTT_BASE_TOPIC) + "/device";
+  String payload = buildStateJson();
   mqttClient.publish(topic.c_str(), payload.c_str(), true);
 }
 
@@ -1382,6 +1406,7 @@ void mqttLoop() {
     
     if (millis() - g_mqtt_last_state_publish > MQTT_STATE_INTERVAL) {
       g_mqtt_last_state_publish = millis();
+      mqttPublishDevice();
       mqttPublishAllRelayStates();
     }
   }
@@ -1419,8 +1444,10 @@ void setup() {
   rgb.setHeartbeatEnabled(true);
   BoardPins::configInputs();
   // --- MQTT setup ---
-  Serial.println("[BOOT] Initializing MQTT...");
-  mqttSetup();
+  if (MQTT_ENABLED == 1) {
+    Serial.println("[BOOT] Initializing MQTT...");
+    mqttSetup();
+  }
   // --- Register HTTP routes ONCE (works for Wi-Fi/AP server) ---
   // (Safe to register even if we don't call server.begin() yet.)
   server.on("/",              HTTP_GET,  handleIndex);
@@ -1501,7 +1528,9 @@ void loop() {
   }
   rgb.tick();            // heartbeat
   // --- MQTT service ---
-  mqttLoop();
+  if (MQTT_ENABLED == 1) {
+    mqttLoop();
+  }
   // ---------- Priority + failover with light debounce ----------
   // We require the new target to be "good" for ~800 ms before switching.
   static uint32_t stableStartMs = 0;
@@ -1572,7 +1601,7 @@ void loop() {
         }
       }
       // Publish all inputs state after any change
-      mqttPublishAllInputStates();
+      //mqttPublishAllInputStates();
       prev_di_mask = cur_di_mask;
     }
     lastDIPoll = now;
